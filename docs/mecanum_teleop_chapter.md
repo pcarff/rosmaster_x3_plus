@@ -58,18 +58,23 @@ ros2 run rosmaster_base base_controller
 ```
 *(You should see "Connected to Rosmaster X3 Plus hardware successfully!")*
 
-**Step 2: Start the Keyboard Teleop on your Workstation**
-Open a new terminal on your Ubuntu workstation:
+**Step 2: Start the Joystick Teleop on your Workstation**
+First, ensure your gamepad (Xbox, PlayStation, or generic USB controller) is physically plugged into your Ubuntu workstation or connected via Bluetooth.
+
+Open a new terminal on your workstation and apply the joystick packages if you haven't yet:
 ```bash
-source ~/Workspaces/x3_plus/setup_env.bash
-ros2 run teleop_twist_keyboard teleop_twist_keyboard
+sudo apt install ros-humble-joy ros-humble-teleop-twist-joy
 ```
 
-**How to Drive:**
-- `i` : Move forward
-- `,` : Move backward
-- `j` : Rotate left
-- `l` : Rotate right
-- **`u` / `o` / `m` / `.`** : Strafe in 45-degree diagonals!
+To automatically map your joystick's axes directly to the `/cmd_vel` strafe and rotation vectors, we created a custom launch file in your workspace. Run it like this:
+```bash
+source ~/Workspaces/x3_plus/setup_env.bash
+ros2 launch ~/Workspaces/x3_plus/launch/joystick_teleop.launch.py
+```
 
-Try driving it around! Notice how fast the robot responds because your workstation and the Jetson are sharing information instantly over the network via DDS.
+**How to Drive (Standard Xbox/PS Mapping):**
+- **Left Stick Up/Down**: Move Forward / Backward
+- **Left Stick Left/Right**: \*\*Strafe\*\* perfectly sideways!
+- **Right Stick Left/Right**: Rotate the robot in place
+
+*(Note: `teleop_twist_joy` uses a "deadman switch" for safety. On standard controllers, you must **hold the right bumper (R1) or 'A/Cross' button** while moving the sticks to send any velocity commands!)*

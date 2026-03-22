@@ -80,6 +80,7 @@ Discovered current state of the robot:
 - Implemented a 0.5s watchdog software stop for safety.
 - Deployed and compiled the custom package directly to the robot using our `deploy.sh` script.
 - Documented Mecanum kinematics and ROS2 `/cmd_vel` basics in `docs/mecanum_teleop_chapter.md`.
+- Created a custom workstation launch file (`launch/joystick_teleop.launch.py`) to map Xbox/Playstation gamepads natively to linear (X, Y) and angular (Z) axes for omnidirectional driving.
 
 ---
 

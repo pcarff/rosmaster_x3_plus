@@ -61,6 +61,16 @@ Discovered current state of the robot:
 - Documented YDLIDAR TG30 parameters (frequency, sample rate, angle bounds, etc.)
 - Described conceptual approaches for using 2D LiDAR to build a 3D scanner app (Pan-tilt sweeping, driving SLAM/Octomap, and using the existing depth camera instead).
 
+### 15:31 — Documentation: Depth Camera Chapter
+- Created a new reference document: `docs/depth_camera_chapter.md`
+- Outlined RGB-D capabilities of the Orbbec Astra Pro
+- Configured params: `depth_registration`, `enable_colored_point_cloud`
+- Created `~/launch_camera.sh` script on the robot
+- Visualized `/camera/depth/color/points` and `/camera/color/image_raw`
+- Added RViz2 instructions to both LiDAR and Depth Camera chapters
+- Created RViz2 visualization config: `rviz/camera_view.rviz`
+- Created a sample ROS2 Python node (`depth_camera_demo`) to print the distance at the center of the camera feed.
+
 ---
 
 *— End of Session 1 —*

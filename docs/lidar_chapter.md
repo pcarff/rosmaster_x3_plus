@@ -31,13 +31,32 @@ The behavior of the LiDAR isn't fixed; it is highly configurable via ROS2 parame
 4. **`range_min` and `range_max`**
    - *Default:* `0.01` to `50.0` meters
    - Useful for filtering out noise. For example, if your robot is 20cm wide, any reading under `0.1m` is likely the laser hitting the robot itself and should be ignored.
-5. **`intensity`**
+### 5. `intensity`
    - *Default:* `false`
    - If enabled, the LiDAR will return not just the distance, but the *reflectivity* (intensity) of the object it hit. White walls reflect differently than black fabric. This requires more bandwidth but can be used for advanced algorithms (like finding retro-reflective tape).
 
 ---
 
-## 3. How to Build a 3D Scanner Application
+## 3. Visualizing with RViz2
+Visualizing LiDAR data is crucial for understanding what the robot sees. To view the data on your workstation, you use **RViz2**.
+
+1. **Launch the LiDAR on the robot:**
+   ```bash
+   ssh x3 'bash ~/launch_lidar.sh'
+   ```
+2. **Launch RViz2 on your workstation:**
+   ```bash
+   source ~/Workspaces/x3_plus/setup_env.bash
+   rviz2 -d ~/Workspaces/x3_plus/rviz/lidar_view.rviz
+   ```
+3. **Understanding the Interface:**
+   - **Fixed Frame:** Ensure this is set to `laser_link` in the top left under Global Options. This tells RViz what physical coordinate frame to use as the center of the world.
+   - **LaserScan Display:** On the left panel, you'll see a `LaserScan` display reading from the `/scan` topic. You can adjust the `Size (m)` to make the points larger, or change the `Color Transformer` to `FlatColor`, `Intensity`, or `AxisColor` to color code the dots based on distance or reflectivity.
+   - **The View:** The dots represent the exact measured points where the laser hit an obstacle. These points correspond directly to the arrays of distances sent in the `sensor_msgs/msg/LaserScan` message.
+
+---
+
+## 4. How to Build a 3D Scanner Application
 
 The YDLIDAR TG30 is a **2D LiDAR**. It only measures distances in a single flat plane (the X-Y plane). However, if your goal is to write an app that acts as a **3D scanner**, you can absolutely do it using this sensor!
 

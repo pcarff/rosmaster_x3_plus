@@ -1,0 +1,51 @@
+Panels:
+  - Class: rviz_common/Displays
+    Name: Displays
+  - Class: rviz_common/Views
+    Name: Views
+Visualization Manager:
+  Class: ""
+  Displays:
+    - Class: rviz_default_plugins/Grid
+      Name: Grid
+      Enabled: true
+      Cell Size: 1
+      Color: 100; 100; 100
+      Plane Cell Count: 20
+      Reference Frame: <Fixed Frame>
+    - Class: rviz_default_plugins/Image
+      Name: Image
+      Enabled: true
+      Topic:
+        Value: /camera/color/image_raw
+        Depth: 5
+      Normalize Range: true
+    - Class: rviz_default_plugins/PointCloud2
+      Name: Colored Point Cloud
+      Enabled: true
+      Topic:
+        Value: /camera/depth/color/points
+        Depth: 5
+      Color Transformer: RGB8
+      Size (m): 0.01
+      Style: Points
+  Global Options:
+    Background Color: 30; 30; 30
+    Fixed Frame: camera_link
+    Frame Rate: 30
+  Name: root
+  Tools:
+    - Class: rviz_default_plugins/MoveCamera
+    - Class: rviz_default_plugins/Interact
+  Value: true
+  Views:
+    Current:
+      Class: rviz_default_plugins/Orbit
+      Distance: 2.0
+      Enable Stereo Rendering:
+        Value: false
+      Name: Current View
+      Pitch: 0.5
+      Target Frame: <Fixed Frame>
+      Yaw: 0.78
+      Value: Orbit (rviz_default_plugins)

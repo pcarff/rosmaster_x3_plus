@@ -1,0 +1,15 @@
+# ROS2 and Colcon
+build/
+install/
+log/
+
+# IDEs
+.vscode/
+.idea/
+
+# Python
+__pycache__/
+*.pyc
+
+# Local Configs
+cyclonedds.xml

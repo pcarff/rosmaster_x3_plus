@@ -70,6 +70,16 @@ Discovered current state of the robot:
 - Added RViz2 instructions to both LiDAR and Depth Camera chapters
 - Created RViz2 visualization config: `rviz/camera_view.rviz`
 - Created a sample ROS2 Python node (`depth_camera_demo`) to print the distance at the center of the camera feed.
+- **Hardware Blocker:** The Astra Pro Plus initialized udev correctly and `/dev/video0` is accessible, but OpenNI2 reports "Found 0 devices". Multiple launch configs failed. Likely a missing `libAstraProPlus.so` / Jetpack 6 incompatibility in the provided Yaboom workspace.
+
+### 15:45 — Custom Base Controller & Teleoperation
+- Noticed the Yaboom source workspace (`yahboomcar_ws`) was entirely absent/deleted from the Jetson.
+- Leveraged the existing system-wide `Rosmaster_Lib` python module to interact with the MCU.
+- Developed a custom `rosmaster_base` ROS2 package from scratch on the workstation.
+- Built a node that subscribes to `/cmd_vel` (`geometry_msgs/msg/Twist`) and converts `x`, `y` (Mecanum strafing), and `z` velocities into `Rosmaster().set_car_motion()` commands.
+- Implemented a 0.5s watchdog software stop for safety.
+- Deployed and compiled the custom package directly to the robot using our `deploy.sh` script.
+- Documented Mecanum kinematics and ROS2 `/cmd_vel` basics in `docs/mecanum_teleop_chapter.md`.
 
 ---
 

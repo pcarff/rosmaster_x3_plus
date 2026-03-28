@@ -15,23 +15,33 @@ Unlike the 2D LiDAR (which spins a laser full circle but only in a flat plane), 
 
 The camera uses the `astra_camera` ROS2 package. When launching it, you have access to a massive list of parameters to control its performance.
 
-### Resolution and Framerate
-By default, the camera runs at **640x480 at 30 FPS**. You can change these using:
-- `color_width` / `color_height` / `color_fps`
-- `depth_width` / `depth_height` / `depth_fps`
-- `ir_width` / `ir_height` / `ir_fps` (Infrared image stream)
+### Stream Control (The "Toggles")
+- **`enable_color` / `enable_depth` / `enable_ir`** (Default: `true`)
+    - **Effect:** Setting these to `false` stops the camera from sending that data over USB.
+    - **Use Case:** Turn off `enable_color` to save Jetson CPU if you only need 3D obstacle avoidance.
 
-> *Tip: Higher resolutions give better detail but use significantly more USB bandwidth and Jetson CPU power to process.*
+### Resolution and Framerate (The "Detail")
+- **`color_width` / `color_height` / `color_fps`**
+- **`depth_width` / `depth_height` / `depth_fps`**
+    - **Effect:** Higher resolutions (e.g., 640x480) give better detail but use more USB bandwidth.
+    - **Effect:** Higher FPS (e.g., 30) gives smoother motion, while lower FPS (e.g., 10) can make the point cloud more stable and "thicker" as the CPU has more time to process.
 
-### Point Cloud Generation
-The node can mathematically combine the 2D depth image and the 2D color image into a true 3D space:
-- **`enable_point_cloud`** (default: `true`): Generates a 3D XYZ cloud without color.
-- **`enable_colored_point_cloud`** (default: `false`): Attaches the exact RGB color to every 3D point. This looks amazing in RViz but takes more processing overhead.
-- **`depth_registration`** (default: `true`): **Crucial parameter.** Because the depth sensor and the color lens are physically sitting next to each other on the camera bar, their perspectives are slightly misaligned. Setting this to `true` uses a hardware feature to warp the depth map to perfectly align with the color image, fixing "color bleeding" on the edges of objects in the 3D cloud.
+### Depth Registration (The "Alignment")
+- **`depth_registration`** (Default: `true`)
+    - **Effect:** Because the RGB and Depth lenses are physically separated, their images are slightly offset. Setting this to `true` uses hardware math to "warp" the depth image to perfectly match the color feed.
+    - **Use Case:** **Must be `true`** if you want a **Colored** Point Cloud where every 3D point has the correct RGB color.
 
-### Toggling Streams
-To save USB bandwidth, turn off streams you don't need:
-- `enable_color`, `enable_depth`, `enable_ir` (defaults: `true`)
+### Point Cloud Generation (The "3D View")
+- **`enable_point_cloud`** (Default: `true`)
+    - **Effect:** Generates a 3D XYZ cloud without color.
+- **`enable_colored_point_cloud`** (Default: `false`)
+    - **Effect:** Attaches the exact RGB color to every 3D point. This is very "heavy" on the network/DDS and may lag over slow WiFi.
+
+### UVC Parameters (The "Video Driver")
+- **`uvc_product_id`** (Set to: `0x050f` for this robot)
+    - **Effect:** Tells the driver which USB device is the color sensor.
+- **`uvc_camera_format`** (Default: `mjpeg`)
+    - **Effect:** Uses compressed MJPEG to save USB bandwidth.
 
 ---
 
@@ -79,7 +89,21 @@ export CYCLONEDDS_URI="<CycloneDDS><Domain><Discovery><Peers><Peer address='192.
 
 ---
 
-## 5. Health Monitoring (Sensing Heartbeat)
+## 5. Visualizing with RViz2
+
+### Steps to see the Point Cloud:
+1. **Fixed Frame:** Ensure this is set to **`camera_link`**.
+2. **Add PointCloud2:** 
+   - Click `Add` -> `By topic` tab.
+   - Select `/camera/depth/color/points` -> `PointCloud2`.
+3. **Optimize View:**
+   - **Size (m):** Change from `0.01` to `0.03` to make points easier to see.
+   - **Color Transformer:** Set to `RGB8` to see real-world colors.
+   - **Style:** Set to `Points`.
+
+---
+
+## 6. Health Monitoring (Sensing Heartbeat)
 
 We have created a custom node to monitor the health of the camera streams. It provides a simple text status of whether frames are arriving.
 
@@ -93,7 +117,7 @@ ros2 run depth_camera_demo camera_status_node
 
 ---
 
-## 6. Sample Code Demo
+## 7. Sample Code Demo
 
 Want to write code that reacts to the depth camera? Imagine an app that calculates the distance to the exact center of the screen (e.g., measuring how far away an object is). 
 

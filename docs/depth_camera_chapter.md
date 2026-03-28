@@ -65,26 +65,37 @@ export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
 export ROS_DOMAIN_ID=42
 ```
 
-### Step 2: Executing the Launcher
-On this robot, the color sensor uses a specific product ID (`0x050f`). We also enable TF publishing so RViz can see the 3D data.
+### Step 2: Executing the Launcher (Stable WiFi Settings)
+For reliable performance over WiFi, we recommend a resolution of **320x240**. 640x480 often saturates the network and can cause the driver to crash.
 
 ```bash
 source /opt/ros/humble/setup.bash
 source ~/workspaces/x3plus_ws/install/setup.bash
-ros2 launch astra_camera astra_pro.launch.xml uvc_product_id:=0x050f publish_tf:=true
+ros2 launch astra_camera astra_pro.launch.xml \
+  uvc_product_id:=0x050f \
+  publish_tf:=true \
+  depth_width:=320 depth_height:=240 \
+  color_width:=320 color_height:=240 \
+  enable_colored_point_cloud:=true
 ```
 
 ---
 
 ## 4. Troubleshooting Network Discovery (DDS)
 
-If you can see topics in `ros2 topic list` but can't see images in RViz, your WiFi router is likely blocking **Multicast** traffic. You can fix this by telling ROS2 exactly where the other machine is (Unicast).
+If you can see topics in `ros2 topic list` but can't see images in RViz, your WiFi router is likely blocking **Multicast** traffic or the data fragments are too large.
 
 ### Bypassing with a Peer List
 On your workstation, set the `CYCLONEDDS_URI` to point directly to the robot's IP:
 
 ```bash
 export CYCLONEDDS_URI="<CycloneDDS><Domain><Discovery><Peers><Peer address='192.168.8.246'/></Peers></Discovery></Domain></CycloneDDS>"
+```
+
+### Process Clean-up
+If the camera fails to start with a `Resource busy` error, a "zombie" process may still be holding the USB lock. Nuke all ROS processes before restarting:
+```bash
+pkill -9 -u jetson
 ```
 
 ---
@@ -97,9 +108,9 @@ export CYCLONEDDS_URI="<CycloneDDS><Domain><Discovery><Peers><Peer address='192.
    - Click `Add` -> `By topic` tab.
    - Select `/camera/depth/color/points` -> `PointCloud2`.
 3. **Optimize View:**
+   - **Reliability Policy:** Switch to **`Best Effort`** (Crucial for large data).
    - **Size (m):** Change from `0.01` to `0.03` to make points easier to see.
-   - **Color Transformer:** Set to `RGB8` to see real-world colors.
-   - **Style:** Set to `Points`.
+   - **Color Transformer:** Set to `RGB8`.
 
 ---
 

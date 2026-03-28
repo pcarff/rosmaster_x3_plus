@@ -74,27 +74,21 @@ Choose the mode that best fits your WiFi quality and CPU needs.
 - FPS: 30
 - Colored Point Clouds: Enabled
 
-#### Mode B: Standard (Stable WiFi)
-*Recommended for general development.*
+#### Mode B: Standard / Live Digital Twin (Stable WiFi)
+*Recommended for general development and real-time visualization.*
 - Resolution: 320x240
 - FPS: 10
-- Colored Point Clouds: Enabled
+- Colored Point Clouds: Enabled (but watch for lag)
 
-#### Mode C: Live Digital Twin (Low-Latency WiFi)
-*Best for real-time visualization with zero lag.*
-- Resolution: 160x120
-- FPS: 5
-- Colored Point Clouds: Disabled (XYZ only)
-
-**Launch Command (Mode C Example):**
+**Launch Command (Mode B Example):**
 ```bash
 ros2 launch astra_camera astra_pro.launch.xml \
   uvc_product_id:=0x050f \
   publish_tf:=true \
-  depth_width:=160 depth_height:=120 \
-  color_width:=160 color_height:=120 \
-  depth_fps:=5 color_fps:=5 \
-  enable_colored_point_cloud:=false
+  depth_width:=320 depth_height:=240 \
+  color_width:=320 color_height:=240 \
+  depth_fps:=10 color_fps:=10 \
+  enable_colored_point_cloud:=true
 ```
 
 ---
@@ -118,7 +112,7 @@ export CYCLONEDDS_URI="<CycloneDDS><Domain><Discovery><Peers><Peer address='192.
 1. **Fixed Frame:** Ensure this is set to **`camera_link`**.
 2. **Add PointCloud2:** 
    - Click `Add` -> `By topic` tab.
-   - Select `/camera/depth/points` -> `PointCloud2`.
+   - Select `/camera/depth/color/points` -> `PointCloud2`.
 3. **Optimize View:**
    - **Reliability Policy:** Switch to **`Best Effort`** (Crucial for large data).
    - **Size (m):** Change from `0.01` to `0.03` to make points easier to see.
@@ -133,7 +127,7 @@ A Digital Twin combines the 3D Point Cloud with a virtual model of the robot (UR
 1. **Add a 3D Panel.**
 2. **Paste URDF:** Under Settings -> Robot Model -> URDF, paste the robot's description XML.
 3. **Set Mesh Source:** Set to "Robot Description" to load the 3D meshes.
-4. **Subscribe to Points:** Check the `/camera/depth/points` topic. 
+4. **Subscribe to Points:** Check the `/camera/depth/color/points` topic. 
 
 The live point cloud will now be perfectly aligned with the virtual robot's camera mount.
 

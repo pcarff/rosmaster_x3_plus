@@ -65,18 +65,36 @@ export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
 export ROS_DOMAIN_ID=42
 ```
 
-### Step 2: Executing the Launcher (Stable WiFi Settings)
-For reliable performance over WiFi, we recommend a resolution of **320x240**. 640x480 often saturates the network and can cause the driver to crash.
+### Step 2: Choosing a Performance Mode
+Choose the mode that best fits your WiFi quality and CPU needs.
 
+#### Mode A: High Detail (Ethernet Only)
+*Best for stationary robots or high-end routers.*
+- Resolution: 640x480
+- FPS: 30
+- Colored Point Clouds: Enabled
+
+#### Mode B: Standard (Stable WiFi)
+*Recommended for general development.*
+- Resolution: 320x240
+- FPS: 10
+- Colored Point Clouds: Enabled
+
+#### Mode C: Live Digital Twin (Low-Latency WiFi)
+*Best for real-time visualization with zero lag.*
+- Resolution: 160x120
+- FPS: 5
+- Colored Point Clouds: Disabled (XYZ only)
+
+**Launch Command (Mode C Example):**
 ```bash
-source /opt/ros/humble/setup.bash
-source ~/workspaces/x3plus_ws/install/setup.bash
 ros2 launch astra_camera astra_pro.launch.xml \
   uvc_product_id:=0x050f \
   publish_tf:=true \
-  depth_width:=320 depth_height:=240 \
-  color_width:=320 color_height:=240 \
-  enable_colored_point_cloud:=true
+  depth_width:=160 depth_height:=120 \
+  color_width:=160 color_height:=120 \
+  depth_fps:=5 color_fps:=5 \
+  enable_colored_point_cloud:=false
 ```
 
 ---
@@ -92,12 +110,6 @@ On your workstation, set the `CYCLONEDDS_URI` to point directly to the robot's I
 export CYCLONEDDS_URI="<CycloneDDS><Domain><Discovery><Peers><Peer address='192.168.8.246'/></Peers></Discovery></Domain></CycloneDDS>"
 ```
 
-### Process Clean-up
-If the camera fails to start with a `Resource busy` error, a "zombie" process may still be holding the USB lock. Nuke all ROS processes before restarting:
-```bash
-pkill -9 -u jetson
-```
-
 ---
 
 ## 5. Visualizing with RViz2
@@ -106,25 +118,24 @@ pkill -9 -u jetson
 1. **Fixed Frame:** Ensure this is set to **`camera_link`**.
 2. **Add PointCloud2:** 
    - Click `Add` -> `By topic` tab.
-   - Select `/camera/depth/color/points` -> `PointCloud2`.
+   - Select `/camera/depth/points` -> `PointCloud2`.
 3. **Optimize View:**
    - **Reliability Policy:** Switch to **`Best Effort`** (Crucial for large data).
    - **Size (m):** Change from `0.01` to `0.03` to make points easier to see.
-   - **Color Transformer:** Set to `RGB8`.
 
 ---
 
-## 6. Health Monitoring (Sensing Heartbeat)
+## 6. Creating a Digital Twin
 
-We have created a custom node to monitor the health of the camera streams. It provides a simple text status of whether frames are arriving.
+A Digital Twin combines the 3D Point Cloud with a virtual model of the robot (URDF).
 
-**Run on the robot:**
-```bash
-ros2 run depth_camera_demo camera_status_node
-```
+### In Foxglove:
+1. **Add a 3D Panel.**
+2. **Paste URDF:** Under Settings -> Robot Model -> URDF, paste the robot's description XML.
+3. **Set Mesh Source:** Set to "Robot Description" to load the 3D meshes.
+4. **Subscribe to Points:** Check the `/camera/depth/points` topic. 
 
-**Topic to watch (on Workstation/Foxglove):**
-- `/camera/status` -> Reports: `Color: OK (### frames) | Depth: OK (### frames)`
+The live point cloud will now be perfectly aligned with the virtual robot's camera mount.
 
 ---
 

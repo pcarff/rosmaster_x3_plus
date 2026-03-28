@@ -25,6 +25,7 @@ setup(
     entry_points={
         'console_scripts': [
             'center_distance_node = depth_camera_demo.center_distance_node:main',
+            'camera_status_node = depth_camera_demo.camera_status_node:main',
         ],
     },
 )

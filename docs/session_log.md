@@ -70,7 +70,7 @@ Discovered current state of the robot:
 - Added RViz2 instructions to both LiDAR and Depth Camera chapters
 - Created RViz2 visualization config: `rviz/camera_view.rviz`
 - Created a sample ROS2 Python node (`depth_camera_demo`) to print the distance at the center of the camera feed.
-- **Hardware Blocker:** The Astra Pro Plus initialized udev correctly and `/dev/video0` is accessible, but OpenNI2 reports "Found 0 devices". Multiple launch configs failed. Likely a missing `libAstraProPlus.so` / Jetpack 6 incompatibility in the provided Yaboom workspace.
+- **Hardware Blocker:** The Astra Pro Plus initialized udev correctly and `/dev/video0` is accessible, but OpenNI2 reports "Found 0 devices". Multiple launch configs failed. ~~Likely a missing `libAstraProPlus.so` / Jetpack 6 incompatibility in the provided Yaboom workspace.~~ **Resolved in Session 2** — the Yaboom `ros2_astra_camera` driver (with bundled arm64 OpenNI2 binaries) fixed detection; the remaining crash was caused by requesting an unsupported UVC framerate (15fps instead of 30fps).
 
 ### 15:45 — Custom Base Controller & Teleoperation
 - Noticed the Yaboom source workspace (`yahboomcar_ws`) was entirely absent/deleted from the Jetson.
@@ -85,3 +85,55 @@ Discovered current state of the robot:
 ---
 
 *— End of Session 1 —*
+
+---
+
+## 2026-03-28 — Session 2: Depth Camera Breakthrough
+
+### 12:48 — Camera Debugging Resumed
+- Resumed from Session 1's hardware blocker: OpenNI2 "Found 0 devices" error.
+- Ran `ros2 launch astra_camera list_devices.launch.xml` → **Found 1 devices** ✅
+- The "Found 0 devices" issue from Session 1 appears to have been resolved by the `ros2_astra_camera` driver build deployed between sessions (the driver from the Yaboom archive includes the correct arm64 OpenNI2 binaries).
+
+### 12:51 — Root Cause: UVC FPS Crash
+- First launch attempt with `color_fps:=15` crashed immediately: `set uvc ctrl error Invalid mode` (SIGSEGV, exit code -11).
+- Used `v4l2-ctl --list-formats-ext -d /dev/video0` to discover the camera's actual supported modes.
+- **Root cause:** The MJPEG format on the UVC color sensor (`2bc5:050f`) only supports **30 fps** at every resolution. Requesting 15 fps causes the driver to crash fatally.
+- Documented full supported mode table (MJPEG and YUYV) in `docs/depth_camera_chapter.md`.
+
+### 12:51 — USB Crash Recovery
+- After the driver crash (SIGSEGV), `/dev/video0` and `/dev/video1` disappeared entirely.
+- Developed a USB unbind/rebind recovery procedure that avoids needing a physical cable re-plug:
+  ```bash
+  echo "1-2" | sudo tee /sys/bus/usb/drivers/usb/unbind
+  echo "1-2" | sudo tee /sys/bus/usb/drivers/usb/bind
+  ```
+- After 3 seconds, both Orbbec USB devices re-enumerated and `/dev/video*` returned.
+
+### 12:52 — Camera Running Successfully
+- Launched with correct parameters: `640x480@30fps`, `depth_registration:=true`, `enable_colored_point_cloud:=true`.
+- **All streams active:** depth, IR, and UVC color.
+- Confirmed 8 topics publishing and visible from workstation via CycloneDDS.
+
+### 12:53 — Foxglove Bridge
+- Discovered `ros-humble-foxglove-bridge` is pre-installed on the robot.
+- Launched the bridge on port 8765:
+  ```bash
+  ros2 launch foxglove_bridge foxglove_bridge_launch.xml port:=8765
+  ```
+- All 12 camera channels advertised successfully.
+- Connection URL: `ws://192.168.8.246:8765`
+
+### 12:54 — Documentation Updates
+- Rewrote `docs/depth_camera_chapter.md` with:
+  - Hardware identifiers (USB IDs, serial number, device paths)
+  - Complete supported resolution/FPS matrix for MJPEG and YUYV
+  - Corrected launch file name (`astro_pro_plus.launch.xml`, note the typo)
+  - Full published topic table with correct remapped names
+  - USB crash recovery procedure
+  - Foxglove Bridge connection instructions and recommended panels
+  - Troubleshooting section for all known failure modes
+
+---
+
+*— End of Session 2 —*
